@@ -1,4 +1,6 @@
-﻿using BrawlBuff.Application.Common.Interfaces;
+﻿using BrawlBuff.Application.Common.Comparers;
+using BrawlBuff.Application.Common.Interfaces;
+using BrawlBuff.Application.HttpServices.BrawlApiHttpService;
 using BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService;
 using BrawlBuff.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -10,12 +12,16 @@ namespace BrawlBuff.Application.Services
     public class PlayerService : IPlayerService
     {
         private readonly BrawlStarsApiHttpService _brawlStarsApiHttpService;
+        private readonly BrawlApiHttpService _brawlApiHttpService;
         private readonly IBrawlBuffDbContext _brawlBuffDbContext;
 
         // cover everything with cancellation tokens
-        public PlayerService(BrawlStarsApiHttpService brawlStarsApiHttpService, IBrawlBuffDbContext brawlBuffDbContext)
+        public PlayerService(BrawlStarsApiHttpService brawlStarsApiHttpService,
+            BrawlApiHttpService brawlApiHttpService,
+            IBrawlBuffDbContext brawlBuffDbContext)
         {
             _brawlStarsApiHttpService = brawlStarsApiHttpService;
+            _brawlApiHttpService = brawlApiHttpService;
             _brawlBuffDbContext = brawlBuffDbContext;
         }
 
@@ -80,10 +86,9 @@ namespace BrawlBuff.Application.Services
                     {
                         // rewrite this method?
                         var is3vs3Mode = Is3vs3Mode(log.Battle.Teams);
-
+                        // add duel mode support
                         foreach (var team in log.Battle.Teams)
                         {
-                            // fix team places
                             var newTeam = new Team();
 
                             if (is3vs3Mode)
@@ -94,9 +99,6 @@ namespace BrawlBuff.Application.Services
 
                             foreach (var teamPlayer in team)
                             {
-                                // if - 3vs3 - find mainPlayer teamMates and write same result
-                                // then write opposite result to the enemy team
-
                                 if(teamPlayer.Tag == newPlayer.Tag)
                                 {
                                     battleDetail.Brawler = teamPlayer.Brawler.Name;
@@ -104,7 +106,6 @@ namespace BrawlBuff.Application.Services
                                     continue;
                                 }
 
-                                // if teammate - set mainPlayerResult either !mainPlayerResult
                                 var newBattleDetail = new BattleDetail()
                                 {
                                     Team = newTeam,
@@ -130,7 +131,7 @@ namespace BrawlBuff.Application.Services
 
                 await _brawlBuffDbContext.BattleDetails.AddRangeAsync(battleDetails);
 
-                var x = await _brawlBuffDbContext.SaveChangesAsync();
+                await _brawlBuffDbContext.SaveChangesAsync();
 
                 await transaction.CommitAsync();
             }
@@ -146,13 +147,36 @@ namespace BrawlBuff.Application.Services
         private async Task<int?> GetDbEventId(int id)
         {
             var dbEvent = await _brawlBuffDbContext.Events.FirstOrDefaultAsync(e => e.BrawlEventId == id);
+
+            if (id != 0 && dbEvent == null)
+            {
+                // get all events from db, get all events from api call, use linq except and add new event(s)
+                var dbEvents = await _brawlBuffDbContext.Events.ToListAsync();
+
+                var apiMaps = await _brawlApiHttpService.GetMapsAsync();
+                var apiEvents = apiMaps.Select(x =>
+                {
+                    var mode = x.GameMode.Name.Replace(" ", "");
+                    return new Event()
+                    {
+                        BrawlEventId = x.Id,
+                        Map = x.Name,
+                        ImageUrl = x.ImageUrl,
+                        Mode = string.Concat(mode[0].ToString().ToUpper(), mode.AsSpan(1)),
+                    };
+                }).ToList();
+
+                var newEvents = dbEvents.Except(apiEvents, new EventComparer());
+
+                await _brawlBuffDbContext.Events.AddRangeAsync(newEvents);
+                await _brawlBuffDbContext.SaveChangesAsync();
+
+                dbEvent = newEvents.FirstOrDefault(x => x.BrawlEventId == id); 
+            }
+
             return dbEvent?.Id;
         }
 
-        private bool ArePlayersInOneTeam()
-        {
-            return false;
-        }
 
         private bool Is3vs3Mode(List<List<PlayerBattle>> teams)
         {
@@ -170,10 +194,5 @@ namespace BrawlBuff.Application.Services
 
             return place;
         }
-
-        //private bool IsTeammate(string mainPlayerTag, string comparePlayerTag, List<PlayerBattle> team)
-        //{
-
-        //}
     }
 }

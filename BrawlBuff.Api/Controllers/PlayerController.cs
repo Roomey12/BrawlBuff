@@ -28,10 +28,12 @@ namespace BrawlBuffApi.Controllers
             return Ok(x);
         }
 
-        [HttpGet("stats")]
-        public async Task<IActionResult> GetPlayerBattleStats()
+        [HttpGet("{tag}")]
+        public async Task<IActionResult> GetPlayerBattleStats(string tag)
         {
-            var playerStats = await _playerService.GetPlayerBattleStatsAsync("%23Q2L9C0QLQ");
+            NormalizeTag(ref tag);
+
+            var playerStats = await _playerService.GetPlayerBattleStatsAsync(tag);
             return Ok(playerStats);
         }
 
@@ -86,9 +88,9 @@ namespace BrawlBuffApi.Controllers
         //}
 
 
-        //private void NormalizeTag(ref string tag)
-        //{
-        //    tag = "%23" + tag;
-        //}
+        private void NormalizeTag(ref string tag)
+        {
+            tag = "%23" + tag;
+        }
     }
 }

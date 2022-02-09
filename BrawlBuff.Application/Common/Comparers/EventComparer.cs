@@ -18,18 +18,14 @@ namespace BrawlBuff.Application.Common.Comparers
             if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
                 return false;
 
-            return x.BrawlEventId == y.BrawlEventId && x.Mode == y.Mode && x.Map == y.Map;
+            return x.BrawlEventId == y.BrawlEventId;
         }
 
         public int GetHashCode(Event myEvent)
         {
             if (Object.ReferenceEquals(myEvent, null)) return 0;
 
-            int hashBrawlEventId = myEvent.BrawlEventId.GetHashCode();
-            int hashMode = myEvent.Mode == null ? 0 : myEvent.Mode.GetHashCode();
-            int hashMap = myEvent.Map == null ? 0 : myEvent.Map.GetHashCode();
-
-            return hashBrawlEventId ^ hashMode ^ hashMap;
+            return myEvent.BrawlEventId.GetHashCode();
         }
     }
 }

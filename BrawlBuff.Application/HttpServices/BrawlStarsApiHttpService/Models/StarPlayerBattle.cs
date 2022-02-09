@@ -10,6 +10,6 @@ namespace BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService.Models
     {
         public string Tag { get; set; }
         public string Name { get; set; }
-        public Brawler Brawler { get; set; }
+        public BrawlerBattle Brawler { get; set; }
     }
 }

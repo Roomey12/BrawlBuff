@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService.Models
 {
-    public class PlayerBattle
+    public class BrawlerBattle
     {
-        public string Tag { get; set; }
+        public int Id { get; set; }
         public string Name { get; set; }
-        public BrawlerBattle Brawler { get; set; }
-        public List<BrawlerBattle> Brawlers { get; set; }
+        public int Power { get; set; }
+        public int Trophies { get; set; }
+        public int TrophyChange { get; set; }
     }
 }

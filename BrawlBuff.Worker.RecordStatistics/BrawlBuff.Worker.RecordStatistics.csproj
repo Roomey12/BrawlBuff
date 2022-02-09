@@ -1,15 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>e9ae4792-995b-436a-bb2a-c97d2fc7d0e6</UserSecretsId>
+    <UserSecretsId>dotnet-BrawlBuff.Worker.RecordStatistics-85C67229-9B45-48A3-828E-B9C5E2238E35</UserSecretsId>
   </PropertyGroup>
+
+  <ItemGroup>
+	  <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BrawlBuff.Application\BrawlBuff.Application.csproj" />
     <ProjectReference Include="..\BrawlBuff.Infrustructure\BrawlBuff.Infrastructure.csproj" />
   </ItemGroup>
-
 </Project>

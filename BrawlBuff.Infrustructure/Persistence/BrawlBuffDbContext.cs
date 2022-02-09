@@ -20,34 +20,43 @@ namespace BrawlBuff.Infrastructure.Persistence
         public DbSet<BattleDetail> BattleDetails { get; set; }
         public DbSet<Team> Teams { get; set; }
         public override DatabaseFacade Database => base.Database;
-
+        private readonly IDateTime _dateTime;
+        private static bool initialized = false;
         public BrawlBuffDbContext(
-            DbContextOptions<BrawlBuffDbContext> options)
+            DbContextOptions<BrawlBuffDbContext> options,
+            IDateTime dateTime)
                : base(options)
         {
-            Database.EnsureDeleted();
-            Database.EnsureCreated();
+            //if (!initialized)
+            //{
+            //    Database.EnsureDeleted();
+            //    Database.EnsureCreated();
+            //    initialized = true;
+            //}
+            _dateTime = dateTime;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            //foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
-            //{
-            //    switch (entry.State)
-            //    {
-            //        case EntityState.Added:
-            //            entry.Entity.CreatedOn = _dateTime.Now;
-            //            break;
 
-            //        case EntityState.Modified:
-            //            entry.Entity.ModifiedOn = _dateTime.Now;
-            //            break;
-            //    }
-            //}
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
         {
+            foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
+            {
+                switch (entry.State)
+                {
+                    case EntityState.Added:
+                        entry.Entity.CreatedOn = _dateTime.Now;
+                        break;
+
+                    case EntityState.Modified:
+                        entry.Entity.ModifiedOn = _dateTime.Now;
+                        break;
+                }
+            }
+
             return await base.SaveChangesAsync(cancellationToken);
         }
     }

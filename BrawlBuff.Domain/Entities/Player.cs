@@ -11,6 +11,7 @@ namespace BrawlBuff.Domain.Entities
     {
         public int Id { get; set; }
         public string Tag { get; set; }
+        public DateTime StatsUpdatedOn { get; set; }
         public Player(string tag)
         {
             Tag = tag;

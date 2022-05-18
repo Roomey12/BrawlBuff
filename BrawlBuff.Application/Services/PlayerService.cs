@@ -40,31 +40,36 @@ namespace BrawlBuff.Application.Services
 
             var dbPlayer = await _brawlBuffDbContext.Players.FirstOrDefaultAsync(x => x.Tag == player.Tag);
 
-            IEnumerable<BattleDetail> battles;
             if (dbPlayer == null)
             {
-                battles = await StartRecordingPlayerStatistics(player.Tag);
+                var newPlayer = new Player(player.Tag);
+                await RecordPlayerBattleStatsAsync(newPlayer);
             }
-            else
-            {
-                battles = await _brawlBuffDbContext.BattleDetails.Include(x => x.Battle).Where(x => x.PlayerTag == player.Tag).ToListAsync();
-            }
+
+            var battles = await _brawlBuffDbContext.BattleDetails.Include(x => x.Battle).Where(x => x.PlayerTag == player.Tag).ToListAsync();
 
             return battles;
         }
 
-        private async Task<IEnumerable<BattleDetail>> StartRecordingPlayerStatistics(string playerTag)
+        public async Task RecordPlayerBattleStatsAsync(Player player)
         {
-            var newPlayer = new Player(playerTag);
+            if(player == null)
+            {
+                throw new Exception("todo");
+            }
 
             using var transaction = await _brawlBuffDbContext.Database.BeginTransactionAsync();
             var battleDetails = new List<BattleDetail>();
             try
             {
-                await _brawlBuffDbContext.Players.AddAsync(newPlayer);
-                await _brawlBuffDbContext.SaveChangesAsync();
+                player.StatsUpdatedOn = DateTime.Now;
+                if(player.Id == 0)
+                {
+                    await _brawlBuffDbContext.Players.AddAsync(player);
+                    await _brawlBuffDbContext.SaveChangesAsync();
+                }
 
-                var battleLogs = await _brawlStarsApiHttpService.GetRecentBattlesByPlayersTagAsync(newPlayer.Tag, true);
+                var battleLogs = await _brawlStarsApiHttpService.GetRecentBattlesByPlayersTagAsync(player.Tag, true);
 
                 foreach (var log in battleLogs)
                 {
@@ -74,20 +79,27 @@ namespace BrawlBuff.Application.Services
 
                     if (battle != null)
                     {
-                        var existingBattleDetail = await _brawlBuffDbContext.BattleDetails.FirstOrDefaultAsync(x => x.PlayerTag == newPlayer.Tag && x.BattleId == battle.Id);
+                        var existingBattleDetail = await _brawlBuffDbContext.BattleDetails.FirstOrDefaultAsync(x => x.PlayerTag == player.Tag && x.BattleId == battle.Id);
                         
-                        if (existingBattleDetail != null && existingBattleDetail.PlayerId == null)
+                        if (existingBattleDetail != null)
                         {
-                            // mb set battle.modifiedon in future
-                            ExpandExistingBattleDetail(log, existingBattleDetail, newPlayer);
-                            continue;
+                            if (existingBattleDetail.PlayerId == player.Id)
+                            {
+                                break;
+                            }
+
+                            if (existingBattleDetail.PlayerId == null)
+                            {
+                                ExpandExistingBattleDetail(log, existingBattleDetail, player);
+                                continue;
+                            }
                         }
                     }
 
                     var battleDetail = new BattleDetail()
                     {
-                        PlayerId = newPlayer.Id,
-                        PlayerTag = newPlayer.Tag,
+                        PlayerId = player.Id,
+                        PlayerTag = player.Tag,
                         TrophyChange = log.Battle.TrophyChange,
                         Result = log.Battle.Result,
                         Battle = new Battle()
@@ -100,7 +112,7 @@ namespace BrawlBuff.Application.Services
                         }
                     };
 
-                    battleDetails.AddRange(GetBattleDetails(log, battleDetail, newPlayer));
+                    battleDetails.AddRange(GetBattleDetails(log, battleDetail, player));
                 }
 
                 await _brawlBuffDbContext.BattleDetails.AddRangeAsync(battleDetails);
@@ -114,15 +126,13 @@ namespace BrawlBuff.Application.Services
                 await transaction.RollbackAsync();
                 throw;
             }
-
-            return battleDetails;
         }
 
 
         public BattleDetail ExpandExistingBattleDetail(BattleLog log, BattleDetail battleDetail, Player newPlayer)
         {
             battleDetail.PlayerId = newPlayer.Id;
-            var eventType = GetEventType(log.Event.Mode);
+            var eventType = Event.GetEventType(log.Event.Mode);
             battleDetail.TrophyChange = log.Battle.TrophyChange != null ? log.Battle.TrophyChange : 
                 (eventType == EventType.Event1vs1 ? log.Battle.Players.FirstOrDefault(x => x.Tag == newPlayer.Tag).Brawlers.Sum(x => x.Trophies) : null);
             return battleDetail;
@@ -130,8 +140,7 @@ namespace BrawlBuff.Application.Services
 
         public List<BattleDetail> GetBattleDetails(BattleLog log, BattleDetail battleDetail, Player newPlayer)
         {
-            var eventMode = log.Event.Mode ?? log.Battle.Mode;
-            var eventType = GetEventType(eventMode);
+            var eventType = Event.GetEventType(log.Event.Mode ?? log.Battle.Mode);
             var battleDetails = new List<BattleDetail>();
 
             switch (eventType)
@@ -145,10 +154,6 @@ namespace BrawlBuff.Application.Services
                 case EventType.EventSoloPlayers:
                     battleDetails.Add(HandleSoloPlayersGame(log, battleDetail, newPlayer));
                     break;
-                //case EventType.Event5of2: // skip
-                //    break;
-                //case EventType.Event3Players: // skip
-                //    break;
                 //case EventType.Event5vs1: // skip
                 //    break;
                 //case EventType.EventSolo: // skip
@@ -187,7 +192,7 @@ namespace BrawlBuff.Application.Services
                     Brawler = player.Brawlers.FirstOrDefault()?.Name,
                     TrophyChange = player.Brawlers.Sum(x => x.TrophyChange),
                     Place = place,
-                    Result = place == 1 ? "victory" : "defeat"
+                    Result = GetResultByPlace(place, EventType.Event1vs1)
                 };
 
                 battleDetails.Add(newBattleDetail);
@@ -201,6 +206,8 @@ namespace BrawlBuff.Application.Services
             var gamePlayer = log.Battle.Players.FirstOrDefault(x => x.Tag == newPlayer.Tag);
             battleDetail.Place = log.Battle.Rank ?? log.Battle.Players.IndexOf(gamePlayer) + 1;
             battleDetail.Brawler = gamePlayer.Brawler.Name;
+            var eventType = Event.GetEventType(log.Event.Mode ?? log.Battle.Mode);
+            battleDetail.Result = GetResultByPlace(battleDetail.Place.Value, eventType);
             return battleDetail;
         }
 
@@ -220,6 +227,7 @@ namespace BrawlBuff.Application.Services
                 else if (eventType == EventType.Event5of2)
                 {
                     newTeam.Place = log.Battle.Teams.IndexOf(team) + 1;
+                    //set result
                 }
 
                 foreach (var teamPlayer in team)
@@ -228,6 +236,7 @@ namespace BrawlBuff.Application.Services
                     {
                         battleDetail.Brawler = teamPlayer.Brawler.Name;
                         battleDetail.Team = newTeam;
+                        battleDetail.Result = GetResultByPlace(newTeam.Place, eventType);
                         battleDetails.Add(battleDetail);
                         continue;
                     }
@@ -237,7 +246,7 @@ namespace BrawlBuff.Application.Services
                         Team = newTeam,
                         PlayerTag = teamPlayer.Tag,
                         Brawler = teamPlayer.Brawler.Name,
-                        Result = eventType == EventType.Event3vs3 ? newTeam.Place == 1 ? "victory" : "defeat" : null,
+                        Result = GetResultByPlace(newTeam.Place, eventType),
                         Battle = battleDetail.Battle
                     };
 
@@ -284,66 +293,7 @@ namespace BrawlBuff.Application.Services
             return dbEvent?.Id;
         }
 
-        private EventType GetEventType(string eventMode)
-        {
-            // if (eventMode == null)
-
-            var event3vs3 = new List<string>()
-            {
-                "bounty", "gemGrab", "brawlBall", "heist", "siege", "hotZone", "knockout",
-                "trophyThieves", "holdTheTrophy", "volleyBrawl", "basketBrawl"
-            };
-
-            var event1vs1 = new List<string>()
-            {
-                "duels"
-            };
-
-            var eventSoloPlayers = new List<string>()
-            {
-                "soloShowdown", "takedown", "loneStar"
-            };
-
-            var event5of2 = new List<string>()
-            {
-                "duoShowdown"
-            };
-
-            var event3players = new List<string>()
-            {
-                "superCityRampage", "roboRumble", "bossFight"
-            };
-
-            var event5vs1 = new List<string>()
-            {
-                "bigGame"
-            };
-
-            var eventSolo = new List<string>()
-            {
-                "training"
-            };
-
-            var selectedEvent = event3vs3.FirstOrDefault(x => x.Equals(eventMode, StringComparison.OrdinalIgnoreCase)) ??
-                event1vs1.FirstOrDefault(x => x.Equals(eventMode, StringComparison.OrdinalIgnoreCase)) ??
-                eventSoloPlayers.FirstOrDefault(x => x.Equals(eventMode, StringComparison.OrdinalIgnoreCase)) ??
-                event5of2.FirstOrDefault(x => x.Equals(eventMode, StringComparison.OrdinalIgnoreCase)) ??
-                event3players.FirstOrDefault(x => x.Equals(eventMode, StringComparison.OrdinalIgnoreCase)) ??
-                event5vs1.FirstOrDefault(x => x.Equals(eventMode, StringComparison.OrdinalIgnoreCase)) ??
-                eventSolo.FirstOrDefault(x => x.Equals(eventMode, StringComparison.OrdinalIgnoreCase));
-
-            //if (selectedEvent == null) // do smth
-
-            if (event3vs3.Contains(selectedEvent)) return EventType.Event3vs3;
-            if (event1vs1.Contains(selectedEvent)) return EventType.Event1vs1;
-            if (eventSoloPlayers.Contains(selectedEvent)) return EventType.EventSoloPlayers;
-            if (event5of2.Contains(selectedEvent)) return EventType.Event5of2;
-            if (event3players.Contains(selectedEvent)) return EventType.Event3Players;
-            if (event5vs1.Contains(selectedEvent)) return EventType.Event5vs1;
-            if (eventSolo.Contains(selectedEvent)) return EventType.EventSolo;
-            return EventType.Unknown;
-        }
-
+        // used only for battles with 2 teams
         private int GetPlaceByResult(string result, bool getOppositeResult = false)
         {
             var place = result == "victory" ? 1 : 2;
@@ -354,6 +304,21 @@ namespace BrawlBuff.Application.Services
             }
 
             return place;
+        }
+
+        private string GetResultByPlace(int place, EventType eventType)
+        {
+            switch (eventType)
+            {
+                case EventType.EventSoloPlayers:
+                    return place <= 4 ? "victory" : "defeat";
+                case EventType.Event5of2:
+                    return place <= 2 ? "victory" : "defeat";
+                case EventType.Event3vs3 or EventType.Event1vs1:
+                    return place == 1 ? "victory" : "defeat";
+                default:
+                    return null;
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace BrawlBuff.Worker.RecordStatistics
 {
-    internal interface IScopedProcessingService
+    internal interface IRecordStatisticsService
     {
         Task DoWork(CancellationToken stoppingToken);
     }

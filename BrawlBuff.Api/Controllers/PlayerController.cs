@@ -1,13 +1,12 @@
-﻿using BrawlBuff.Application.Common.Interfaces;
+﻿using BrawlBuff.Api.Controllers;
+using BrawlBuff.Application.Common.Interfaces;
 using BrawlBuff.Application.HttpServices.BrawlApiHttpService;
 using BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BrawlBuffApi.Controllers
 {
-    [ApiController]
-    [Route("[controller]")]
-    public class PlayerController : ControllerBase
+    public class PlayerController : ApiControllerBase
     {
         private readonly IPlayerService _playerService;
 

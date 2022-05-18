@@ -18,7 +18,7 @@ namespace BrawlBuff.Domain.Extensions
                 case EventType.Event1vs1:
                     return "event1vs1";
                 case EventType.EventSoloPlayers:
-                    return "eventSoloPlayer";
+                    return "eventSoloPlayers";
                 case EventType.Event5of2:
                     return "event5of2";
                 case EventType.Event3Players:

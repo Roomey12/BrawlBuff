@@ -10,5 +10,6 @@ namespace BrawlBuff.Application.Common.Interfaces
     public interface IPlayerService
     {
         Task<IEnumerable<BattleDetail>> GetPlayerBattleStatsAsync(string tag);
+        Task RecordPlayerBattleStatsAsync(Player player);
     }
 }

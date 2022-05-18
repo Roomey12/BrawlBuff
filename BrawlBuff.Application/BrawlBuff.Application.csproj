@@ -7,10 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="Characters\Commands\" />
     <Folder Include="Common\Behaviours\" />
+    <Folder Include="Players\Commands\" />
+    <Folder Include="Players\Queries\GetApiPlayer\" />
+    <Folder Include="Players\Queries\GetPlayer\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />

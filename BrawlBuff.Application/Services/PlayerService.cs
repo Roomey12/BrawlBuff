@@ -53,7 +53,7 @@ namespace BrawlBuff.Application.Services
 
         public async Task RecordPlayerBattleStatsAsync(Player player)
         {
-            if(player == null)
+            if (player == null)
             {
                 throw new Exception("todo");
             }

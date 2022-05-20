@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BrawlBuff.Application.Characters.Queries.GetPersonalCharactersStats
+namespace BrawlBuff.Application.Brawlers.Queries.GetBrawlersStats
 {
-    public class GetPersonalCharactersStatsQuery : IRequest<GetPersonalCharactersStatsQueryResult>
+    public class GetBrawlersStatsQuery : IRequest<GetBrawlersStatsQueryResult>
     {
         public string PlayerTag { get; set; }
     }

@@ -29,7 +29,7 @@ namespace BrawlBuff.Api
             //services.Configure<ApiBehaviorOptions>(options =>
             //    options.SuppressModelStateInvalidFilter = true);
 
-            // add swagger?
+            services.AddSwaggerGen();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,6 +39,12 @@ namespace BrawlBuff.Api
             {
                 app.UseDeveloperExceptionPage();
                 //app.UseMigrationsEndPoint();
+                app.UseSwagger();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+                    options.RoutePrefix = string.Empty;
+                });
             }
             else
             {

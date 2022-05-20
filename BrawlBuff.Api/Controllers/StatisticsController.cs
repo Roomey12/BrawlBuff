@@ -1,4 +1,5 @@
-﻿using BrawlBuff.Application.Characters.Queries.GetPersonalStats;
+﻿using BrawlBuff.Application.Brawlers.Queries.GetBrawlersStats;
+using BrawlBuff.Application.Players.Queries.GetPersonalStats;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,22 +7,18 @@ namespace BrawlBuff.Api.Controllers
 {
     public class StatisticsController : ApiControllerBase
     {
-        public StatisticsController()
-        {
-
-        }
-
         [HttpGet("stats")]
         public async Task<IActionResult> GetPlayerStats()
         {
-            var result = await Mediator.Send(new GetPersonalStatsQuery { PlayerTag = "#Q2L9C0QLQ" });
+            var result = await Mediator.Send(new GetPlayerStatsQuery { PlayerTag = "#Q2L9C0QLQ" });
             return Ok(result);
         }
 
-        [HttpGet("characters")]
-        public async Task<IActionResult> GetCharacters()
+        [HttpGet("brawlers")]
+        public async Task<IActionResult> GetCharacters([FromQuery] string? tag)
         {
-            return Ok();
+            var result = await Mediator.Send(new GetBrawlersStatsQuery { PlayerTag = tag });
+            return Ok(result);
         }
     }
 }

@@ -7,11 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Characters\Commands\" />
+    <Folder Include="Brawlers\Commands\" />
     <Folder Include="Common\Behaviours\" />
     <Folder Include="Players\Commands\" />
-    <Folder Include="Players\Queries\GetApiPlayer\" />
-    <Folder Include="Players\Queries\GetPlayer\" />
   </ItemGroup>
 
   <ItemGroup>

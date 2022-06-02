@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BrawlBuff.Application.Brawlers.Queries.GetBrawlersStats
+namespace BrawlBuff.Application.Statistics.Queries.GetBrawlersStats
 {
     public class GetBrawlersStatsQueryResult
     {

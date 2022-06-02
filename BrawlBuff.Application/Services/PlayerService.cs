@@ -218,17 +218,13 @@ namespace BrawlBuff.Application.Services
             foreach (var team in log.Battle.Teams)
             {
                 var newTeam = new Team();
-
-                if (eventType == EventType.Event3vs3)
+                var isMainPlayerInThisTeam = team.Any(x => x.Tag == newPlayer.Tag);
+                int? place = eventType switch
                 {
-                    var isMainPlayerInThisTeam = team.Any(x => x.Tag == newPlayer.Tag);
-                    newTeam.Place = GetPlaceByResult(battleDetail.Result, !isMainPlayerInThisTeam);
-                }
-                else if (eventType == EventType.Event5of2)
-                {
-                    newTeam.Place = log.Battle.Teams.IndexOf(team) + 1;
-                    //set result
-                }
+                    EventType.Event3vs3 => GetPlaceByResult(battleDetail.Result, !isMainPlayerInThisTeam),
+                    EventType.Event5of2 => log.Battle.Teams.IndexOf(team) + 1,
+                    _ => null
+                };
 
                 foreach (var teamPlayer in team)
                 {
@@ -236,7 +232,8 @@ namespace BrawlBuff.Application.Services
                     {
                         battleDetail.Brawler = teamPlayer.Brawler.Name;
                         battleDetail.Team = newTeam;
-                        battleDetail.Result = GetResultByPlace(newTeam.Place, eventType);
+                        battleDetail.Result = GetResultByPlace(place, eventType);
+                        battleDetail.Place = place;
                         battleDetails.Add(battleDetail);
                         continue;
                     }
@@ -246,7 +243,8 @@ namespace BrawlBuff.Application.Services
                         Team = newTeam,
                         PlayerTag = teamPlayer.Tag,
                         Brawler = teamPlayer.Brawler.Name,
-                        Result = GetResultByPlace(newTeam.Place, eventType),
+                        Result = GetResultByPlace(place, eventType),
+                        Place = place,
                         Battle = battleDetail.Battle
                     };
 
@@ -306,7 +304,7 @@ namespace BrawlBuff.Application.Services
             return place;
         }
 
-        private string GetResultByPlace(int place, EventType eventType)
+        private string GetResultByPlace(int? place, EventType eventType)
         {
             switch (eventType)
             {

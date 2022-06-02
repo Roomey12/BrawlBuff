@@ -31,7 +31,7 @@ namespace BrawlBuff.Infrastructure.Persistence
             //{
             //    Database.EnsureDeleted();
             //    Database.EnsureCreated();
-            //    initialized = true;
+            //    initialized = true;S
             //}
             _dateTime = dateTime;
         }

@@ -10,6 +10,5 @@ namespace BrawlBuff.Domain.Entities
     public class Team : AuditableEntity
     {
         public int Id { get; set; }
-        public int Place { get; set; }
     }
 }

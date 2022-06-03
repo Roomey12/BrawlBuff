@@ -31,14 +31,9 @@ namespace BrawlBuff.Infrastructure.Persistence
             //{
             //    Database.EnsureDeleted();
             //    Database.EnsureCreated();
-            //    initialized = true;S
+            //    initialized = true;
             //}
             _dateTime = dateTime;
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())

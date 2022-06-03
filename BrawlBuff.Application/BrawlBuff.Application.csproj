@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Common\Behaviours\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0" />

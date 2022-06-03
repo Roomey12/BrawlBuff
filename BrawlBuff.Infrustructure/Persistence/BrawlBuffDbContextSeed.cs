@@ -17,13 +17,11 @@ namespace BrawlBuff.Infrastructure.Persistence
             {
                 var maps = await brawlApiHttpService.GetMapsAsync();
 
-                //int i = 1;
                 var events = maps.Select(x =>
                 {
                     var mode = x.GameMode.Name.Replace(" ", "");
                     return new Event()
                     {
-                        //Id = i++,
                         BrawlEventId = x.Id,
                         Map = x.Name,
                         ImageUrl = x.ImageUrl,

@@ -14,35 +14,42 @@ namespace BrawlBuff.Worker.RecordStatistics
         private readonly ILogger _logger;
         private readonly IBrawlBuffDbContext _brawlBuffDbContext;
         private readonly IPlayerService _playerService;
+        private readonly IDateTime _dateTime;
 
         public RecordStatisticsService(ILogger<RecordStatisticsService> logger, 
             IBrawlBuffDbContext brawlBuffDbContext,
-            IPlayerService playerService)
+            IPlayerService playerService,
+            IDateTime dateTime)
         {
             _logger = logger;
-           _brawlBuffDbContext = brawlBuffDbContext;
+            _brawlBuffDbContext = brawlBuffDbContext;
             _playerService = playerService;
+            _dateTime = dateTime;
         }
 
         public async Task DoWork(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("{0} - Trying to record data.", DateTime.Now);
+                _logger.LogInformation("{0} - Trying to record data.", _dateTime.Now);
 
-                await RecordStatistics();
+                await RecordStatistics(stoppingToken);
 
-                await Task.Delay(10000, stoppingToken);
+                var minutes = 4;
+                var delay = minutes * 60 * 1000;
+                await Task.Delay(delay, stoppingToken);
             }
         }
 
-        private async Task RecordStatistics()
+        private async Task RecordStatistics(CancellationToken stoppingToken)
         {
-            var playersToUpdate = await _brawlBuffDbContext.Players.Where(x => x.StatsUpdatedOn < DateTime.Now.AddMinutes(-1)).ToListAsync();
+            var playersToUpdate = await _brawlBuffDbContext.Players
+                .Where(x => x.StatsUpdatedOn < _dateTime.Now.AddMinutes(-35))
+                .ToListAsync(stoppingToken);
             
             foreach(var player in playersToUpdate)
             {
-                _logger.LogInformation("{0} - Recording data for player {1}", DateTime.Now, player.Tag);
+                _logger.LogInformation("{0} - Recording data for player {1}", _dateTime.Now, player.Tag);
                 await _playerService.RecordPlayerBattleStatsAsync(player);
             }
         }

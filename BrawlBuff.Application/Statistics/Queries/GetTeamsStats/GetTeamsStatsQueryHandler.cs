@@ -23,7 +23,7 @@ namespace BrawlBuff.Application.Statistics.Queries.GetTeamsStats
         public async Task<GetTeamsStatsQueryResult> Handle(GetTeamsStatsQuery request, CancellationToken cancellationToken)
         {
             var teamIds = _brawlBuffDbContext.BattleDetails
-                .Where(x => x.PlayerTag == request.PlayerTag)
+                .Where(x => x.PlayerTag == request.PlayerTag && x.TeamId != null)
                 .Select(x => x.TeamId);
 
             var result = new GetTeamsStatsQueryResult

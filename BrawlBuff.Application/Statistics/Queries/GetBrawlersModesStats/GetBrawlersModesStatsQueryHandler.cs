@@ -48,7 +48,8 @@ namespace BrawlBuff.Application.Statistics.Queries.GetBrawlersModesStats
                     BattlesLostCount = group.Count() - group.Count(x => x.BattleDetail.Result == BattleResult.Victory.GetString()),
                     Winrate = (double)group.Count(x => x.BattleDetail.Result == BattleResult.Victory.GetString()) / group.Count()
                 })
-                .OrderBy(x => x.Brawler)
+                .OrderBy(x => x.BattlesCount)
+                .ThenBy(x => x.Brawler)
                 .ThenBy(x => x.Mode)
                 .ToListAsync(cancellationToken)
             };

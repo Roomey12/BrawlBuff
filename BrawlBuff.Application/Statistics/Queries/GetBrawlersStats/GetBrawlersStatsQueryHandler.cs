@@ -61,7 +61,8 @@ namespace BrawlBuff.Application.Statistics.Queries.GetBrawlersStats
                         CurrentTrophiesCount = isPersonal ? apiBrawlers.First(o => o.Name == x.Brawler).Trophies : 0,
                         MaxTrophiesCount = isPersonal ? apiBrawlers.First(o => o.Name == x.Brawler).HighestTrophies : 0
                     })
-                    .OrderBy(x => x.Brawler)
+                    .OrderByDescending(x => x.BattlesCount)
+                    .ThenBy(x => x.Brawler)
                     .ToList()
             };
             return result;

@@ -43,8 +43,9 @@ namespace BrawlBuff.Worker.RecordStatistics
 
         private async Task RecordStatistics(CancellationToken stoppingToken)
         {
+            var delay = 35;
             var playersToUpdate = await _brawlBuffDbContext.Players
-                .Where(x => x.StatsUpdatedOn < _dateTime.Now.AddMinutes(-35))
+                .Where(x => x.StatsUpdatedOn < _dateTime.Now.AddMinutes(-delay))
                 .ToListAsync(stoppingToken);
             
             foreach(var player in playersToUpdate)

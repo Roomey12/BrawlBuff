@@ -10,6 +10,7 @@ namespace BrawlBuff.Api
         public async static Task Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             using (var scope = host.Services.CreateScope())
             {

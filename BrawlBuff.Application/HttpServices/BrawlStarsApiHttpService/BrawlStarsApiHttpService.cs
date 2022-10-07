@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -42,6 +43,8 @@ namespace BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService
             };
             try
             {
+                System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
                 var player = await _httpClient.GetFromJsonAsync<Player>($"players/{tag}", jsonSerializerOptions);
                 return player;
             }
@@ -66,6 +69,7 @@ namespace BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             };
+            System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
 
             var root = await _httpClient.GetFromJsonAsync<Root>($"players/{tag}/battlelog", jsonSerializerOptions);
 

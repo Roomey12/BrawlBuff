@@ -12,7 +12,7 @@ namespace BrawlBuff.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<BrawlBuffDbContext>(options =>
-                options.UseNpgsql(configuration["BrawlBuffDb-Supabase-ConnectionString"]));
+                options.UseNpgsql(configuration["BrawlBuffDb-Cockroach-ConnectionString"]));
 
             services.AddScoped<IBrawlBuffDbContext>(provider => provider.GetRequiredService<BrawlBuffDbContext>());
 

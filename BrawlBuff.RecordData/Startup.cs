@@ -1,4 +1,5 @@
-﻿using BrawlBuff.Application;
+﻿using System;
+using BrawlBuff.Application;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using BrawlBuff.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,8 @@ namespace BrawlBuff.RecordData
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
             builder.Services.AddLogging(x =>
             {
                 x.AddConfiguration(builder.GetContext().Configuration.GetSection("Logging"));

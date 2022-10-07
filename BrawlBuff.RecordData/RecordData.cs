@@ -24,8 +24,8 @@ namespace BrawlBuff.RecordStatistics
             log.LogInformation("Ctor");
         }
 
-        [FunctionName("RecordData")]//0 0 10-22/2 * * *
-        public async Task Run([TimerTrigger("0 0 7-17/5 * * *")] TimerInfo myTimer)
+        [FunctionName("RecordData")]//0 0 7-17/5 * * *
+        public async Task Run([TimerTrigger("* * * * *")] TimerInfo myTimer)
         {
             log.LogInformation($"Record Data function executed at: {DateTime.Now}");
 

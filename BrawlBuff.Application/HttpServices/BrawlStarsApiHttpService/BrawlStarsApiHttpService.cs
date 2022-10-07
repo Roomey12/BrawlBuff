@@ -20,9 +20,9 @@ namespace BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService
             Configuration = configuration;
 
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("https://api.brawlstars.com/v1/");
+            _httpClient.BaseAddress = new Uri("https://bsproxy.royaleapi.dev/v1/");
 
-            var brawlStarsApiKey = Configuration.GetSection("BrawlStarsApi")["ApiKey"];
+            var brawlStarsApiKey = Configuration["BrawlStarsApi-ApiKey"];
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", brawlStarsApiKey);
         }
 

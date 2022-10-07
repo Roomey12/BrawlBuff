@@ -27,12 +27,12 @@ namespace BrawlBuff.Infrastructure.Persistence
             IDateTime dateTime)
                : base(options)
         {
-            //if (!initialized)
-            //{
-            //    Database.EnsureDeleted();
-            //    Database.EnsureCreated();
-            //    initialized = true;
-            //}
+            if (!initialized)
+            {
+                Database.EnsureDeleted();
+                Database.EnsureCreated();
+                initialized = true;
+            }
             _dateTime = dateTime;
         }
 

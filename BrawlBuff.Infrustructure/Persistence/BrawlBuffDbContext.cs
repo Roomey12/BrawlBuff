@@ -29,8 +29,9 @@ namespace BrawlBuff.Infrastructure.Persistence
         {
             //if (!initialized)
             //{
-            //    Database.EnsureDeleted();
-            //    Database.EnsureCreated();
+            //    //Database.EnsureDeleted();
+            //    //Database.EnsureCreated();
+            //    Database.Migrate();
             //    initialized = true;
             //}
             _dateTime = dateTime;

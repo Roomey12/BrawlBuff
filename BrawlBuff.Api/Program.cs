@@ -1,5 +1,6 @@
 using BrawlBuff.Application.Common.Interfaces;
 using BrawlBuff.Application.HttpServices.BrawlApiHttpService;
+using BrawlBuff.Infrastructure.Extensions;
 using BrawlBuff.Infrastructure.Persistence;
 
 namespace BrawlBuff.Api
@@ -9,11 +10,11 @@ namespace BrawlBuff.Api
         public async static Task Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
+            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
             using (var scope = host.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
-
                 try
                 {
                     var context = services.GetRequiredService<BrawlBuffDbContext>();
@@ -37,55 +38,13 @@ namespace BrawlBuff.Api
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
-                    webBuilder.UseStartup<Startup>());
+                {
+                    webBuilder.UseStartup<Startup>();
+                })
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    var buildConfig = config.Build();
+                    config.AddAzureKeyVault();
+                });
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//using BrawlBuff.Application;
-//using BrawlBuff.Infrastructure;
-
-//var builder = WebApplication.CreateBuilder(args);
-
-//builder.Services.AddApplication();
-//builder.Services.AddInfrastructure(builder.Configuration);
-
-//builder.Services.AddControllers();
-
-//var app = builder.Build();
-
-//// Configure the HTTP request pipeline.
-
-//app.UseHttpsRedirection();
-
-//app.MapControllers();
-
-//app.Run();

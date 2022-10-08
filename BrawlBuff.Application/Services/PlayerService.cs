@@ -10,6 +10,7 @@ using EventBattle = BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService.
 using BattleLog = BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService.Models.BattleLog;
 using BrawlBuff.Domain.Enums;
 using BrawlBuff.Domain.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace BrawlBuff.Application.Services
 {
@@ -18,15 +19,18 @@ namespace BrawlBuff.Application.Services
         private readonly BrawlStarsApiHttpService _brawlStarsApiHttpService;
         private readonly BrawlApiHttpService _brawlApiHttpService;
         private readonly IBrawlBuffDbContext _brawlBuffDbContext;
+        private readonly ILogger<PlayerService> _logger;
 
         // cover everything with cancellation tokens
         public PlayerService(BrawlStarsApiHttpService brawlStarsApiHttpService,
             BrawlApiHttpService brawlApiHttpService,
-            IBrawlBuffDbContext brawlBuffDbContext)
+            IBrawlBuffDbContext brawlBuffDbContext,
+            ILogger<PlayerService> logger)
         {
             _brawlStarsApiHttpService = brawlStarsApiHttpService;
             _brawlApiHttpService = brawlApiHttpService;
             _brawlBuffDbContext = brawlBuffDbContext;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<BattleDetail>> GetPlayerBattleStatsAsync(string tag)
@@ -35,7 +39,7 @@ namespace BrawlBuff.Application.Services
 
             if (player == null)
             {
-                throw new Exception("There are no player with such tag.");
+                throw new Exception("There is no player with such tag.");
             }
 
             var dbPlayer = await _brawlBuffDbContext.Players.FirstOrDefaultAsync(x => x.Tag == player.Tag);
@@ -73,6 +77,7 @@ namespace BrawlBuff.Application.Services
 
                 foreach (var log in battleLogs)
                 {
+                    _logger.LogInformation($"In battle log {log.BattleTime}");
                     var battleTime = DateTime.ParseExact(log.BattleTime, "yyyyMMddTHHmmss'.'fffZ", CultureInfo.InvariantCulture);
                     var dbEventId = (await _brawlBuffDbContext.Events.FirstOrDefaultAsync(x => x.BrawlEventId == log.Event.Id))?.Id;
                     var battle = await _brawlBuffDbContext.Battles.FirstOrDefaultAsync(x => x.BattleTime == battleTime && x.EventId == dbEventId);
@@ -90,6 +95,7 @@ namespace BrawlBuff.Application.Services
 
                             if (existingBattleDetail.PlayerId == null)
                             {
+                                _logger.LogInformation($"Expanding existing battle detail for player: {player.Tag}");
                                 ExpandExistingBattleDetail(log, existingBattleDetail, player);
                                 continue;
                             }
@@ -123,6 +129,9 @@ namespace BrawlBuff.Application.Services
             }
             catch(Exception ex)
             {
+                _logger.LogError("Something went wrong in RecordPlayerBattleStatsAsync.");
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.GetType().ToString());
                 await transaction.RollbackAsync();
                 throw;
             }
@@ -181,6 +190,8 @@ namespace BrawlBuff.Application.Services
                     battleDetail.TrophyChange = player.Brawlers.Sum(x => x.TrophyChange);
                     battleDetail.Place = place;
                     battleDetail.Brawler = player.Brawlers.FirstOrDefault()?.Name;
+                    _logger.LogInformation($"Brawler: {battleDetail.Brawler}");
+
                     battleDetails.Add(battleDetail);
                     continue;
                 }
@@ -208,6 +219,9 @@ namespace BrawlBuff.Application.Services
             battleDetail.Brawler = gamePlayer.Brawler.Name;
             var eventType = Event.GetEventType(log.Event.Mode ?? log.Battle.Mode);
             battleDetail.Result = GetResultByPlace(battleDetail.Place.Value, eventType);
+
+            _logger.LogInformation($"Brawler: {gamePlayer.Brawler.Name}");
+
             return battleDetail;
         }
 
@@ -234,6 +248,7 @@ namespace BrawlBuff.Application.Services
                         battleDetail.Team = newTeam;
                         battleDetail.Result = GetResultByPlace(place, eventType);
                         battleDetail.Place = place;
+                        _logger.LogInformation($"Brawler: {battleDetail.Brawler}");
                         battleDetails.Add(battleDetail);
                         continue;
                     }

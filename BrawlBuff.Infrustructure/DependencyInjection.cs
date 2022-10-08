@@ -12,9 +12,7 @@ namespace BrawlBuff.Infrastructure
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<BrawlBuffDbContext>(options =>
-                options.UseMySql(configuration.GetConnectionString("BrawlBuffConnectionString"),
-                    new MySqlServerVersion(new Version(8, 0, 26)),
-                    b => b.MigrationsAssembly(typeof(BrawlBuffDbContext).Assembly.FullName)));
+                options.UseNpgsql(configuration["BrawlBuffDb-Cockroach-ConnectionString"]));
 
             services.AddScoped<IBrawlBuffDbContext>(provider => provider.GetRequiredService<BrawlBuffDbContext>());
 

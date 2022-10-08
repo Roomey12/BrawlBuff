@@ -17,7 +17,7 @@ namespace BrawlBuff.Api
         {
             services.AddApplication();
             services.AddInfrastructure(Configuration);
-
+            services.AddLogging();//
             //services.AddDatabaseDeveloperPageExceptionFilter();
 
             services.AddHttpContextAccessor();

@@ -25,7 +25,7 @@ namespace BrawlBuff.RecordStatistics
         }
 
         [FunctionName("RecordData")]//0 0 7-17/5 * * *
-        public async Task Run([TimerTrigger("* * * * *")] TimerInfo myTimer)
+        public async Task Run([TimerTrigger("0 0 7-17/5 * * *")] TimerInfo myTimer)
         {
             log.LogInformation($"Record Data function executed at: {DateTime.Now}");
 

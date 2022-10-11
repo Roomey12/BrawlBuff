@@ -14,20 +14,22 @@ namespace BrawlBuff.RecordStatistics
     {
         private readonly IBrawlBuffDbContext _brawlBuffDbContext;
         private readonly IPlayerService _playerService;
-        private readonly ILogger log;
+        private readonly ILogger _logger;
+        private readonly IDateTime _dateTime;
 
-        public RecordData(IBrawlBuffDbContext brawlBuffDbContext, IPlayerService playerService, ILogger<RecordData> log)
+        public RecordData(IBrawlBuffDbContext brawlBuffDbContext, IPlayerService playerService, ILogger<RecordData> logger, IDateTime dateTime)
         {
             _brawlBuffDbContext = brawlBuffDbContext;
             _playerService = playerService;
-            this.log = log;
-            log.LogInformation("Ctor");
+            _logger = logger;
+            _dateTime = dateTime;
+            _logger.LogInformation("Record Statistics Function Constructor");
         }
 
         [FunctionName("RecordData")]//0 0 7-17/5 * * *
         public async Task Run([TimerTrigger("0 0 7-17/5 * * *")] TimerInfo myTimer)
         {
-            log.LogInformation($"Record Data function executed at: {DateTime.Now}");
+            _logger.LogInformation($"Record Data function executed at: {_dateTime.Now}");
 
             var compareTime = DateTime.Now.AddMinutes(-1);
 
@@ -37,12 +39,12 @@ namespace BrawlBuff.RecordStatistics
 
             foreach (var player in playersToUpdate)
             {
-                log.LogInformation("{0} - Staring recording data for player {1}", DateTime.Now, player.Tag);
+                _logger.LogInformation("{0} - Staring recording data for player {1}", DateTime.Now, player.Tag);
                 await _playerService.RecordPlayerBattleStatsAsync(player);
-                log.LogInformation("{0} - Finished recording data for player {1}", DateTime.Now, player.Tag);
+                _logger.LogInformation("{0} - Finished recording data for player {1}", DateTime.Now, player.Tag);
             }
 
-            log.LogInformation($"Record Data function finished at: {DateTime.Now}");
+            _logger.LogInformation($"Record Data function finished at: {_dateTime.Now}");
 
         }
     }

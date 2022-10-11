@@ -18,7 +18,7 @@ namespace BrawlBuff.Api.Controllers
     public class StatisticsController : ApiControllerBase
     {
         [HttpGet("player/{tag}")]
-        public async Task<IActionResult> GetPlayerStats(string tag)
+        public async Task<IActionResult> GetPlayerStats(string tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var result = await Mediator.Send(new GetPlayerStatsQuery { PlayerTag = tag });
@@ -26,7 +26,7 @@ namespace BrawlBuff.Api.Controllers
         }
 
         [HttpGet("brawlers")]
-        public async Task<IActionResult> GetBrawlersStats([FromQuery] string? tag)
+        public async Task<IActionResult> GetBrawlersStats([FromQuery] string? tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var result = await Mediator.Send(new GetBrawlersStatsQuery { PlayerTag = tag });
@@ -34,7 +34,7 @@ namespace BrawlBuff.Api.Controllers
         }
 
         [HttpGet("maps")]
-        public async Task<IActionResult> GetMapsStats([FromQuery] string? tag)
+        public async Task<IActionResult> GetMapsStats([FromQuery] string? tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var result = await Mediator.Send(new GetMapsStatsQuery { PlayerTag = tag });
@@ -42,7 +42,7 @@ namespace BrawlBuff.Api.Controllers
         }
 
         [HttpGet("modes")]
-        public async Task<IActionResult> GetModesStats([FromQuery] string? tag)
+        public async Task<IActionResult> GetModesStats([FromQuery] string? tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var result = await Mediator.Send(new GetModesStatsQuery { PlayerTag = tag });
@@ -50,7 +50,7 @@ namespace BrawlBuff.Api.Controllers
         }
 
         [HttpGet("teams")]
-        public async Task<IActionResult> GetTeamStats([FromQuery] string tag)
+        public async Task<IActionResult> GetTeamStats([FromQuery] string tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var result = await Mediator.Send(new GetTeamsStatsQuery { PlayerTag = tag });
@@ -58,7 +58,7 @@ namespace BrawlBuff.Api.Controllers
         }
 
         [HttpGet("maps_modes")]
-        public async Task<IActionResult> GetMapsModesStats([FromQuery] string? tag)
+        public async Task<IActionResult> GetMapsModesStats([FromQuery] string? tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var result = await Mediator.Send(new GetMapsModesStatsQuery { PlayerTag = tag });
@@ -66,7 +66,7 @@ namespace BrawlBuff.Api.Controllers
         }
 
         [HttpGet("brawlers_maps")]
-        public async Task<IActionResult> GetBrawlersMapsStats([FromQuery] string? tag)
+        public async Task<IActionResult> GetBrawlersMapsStats([FromQuery] string? tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var result = await Mediator.Send(new GetBrawlersMapsStatsQuery { PlayerTag = tag });
@@ -74,7 +74,7 @@ namespace BrawlBuff.Api.Controllers
         }
 
         [HttpGet("brawlers_modes")]
-        public async Task<IActionResult> GetBrawlersModesStats([FromQuery] string? tag)
+        public async Task<IActionResult> GetBrawlersModesStats([FromQuery] string? tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var result = await Mediator.Send(new GetBrawlersModesStatsQuery { PlayerTag = tag });
@@ -82,7 +82,7 @@ namespace BrawlBuff.Api.Controllers
         }
 
         [HttpGet("brawlers_maps_modes")]
-        public async Task<IActionResult> GetBrawlersMapsModesStats([FromQuery] string? tag)
+        public async Task<IActionResult> GetBrawlersMapsModesStats([FromQuery] string? tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var result = await Mediator.Send(new GetBrawlersMapsModesStatsQuery { PlayerTag = tag });
@@ -90,7 +90,7 @@ namespace BrawlBuff.Api.Controllers
         }
 
         [HttpGet("teams_modes")]
-        public async Task<IActionResult> GetTeamsModesStats([FromQuery] string tag)
+        public async Task<IActionResult> GetTeamsModesStats([FromQuery] string tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var result = await Mediator.Send(new GetTeamsModesStatsQuery { PlayerTag = tag });
@@ -98,7 +98,7 @@ namespace BrawlBuff.Api.Controllers
         }
 
         [HttpGet("teams_maps")]
-        public async Task<IActionResult> GetTeamsMapsStats([FromQuery] string tag)
+        public async Task<IActionResult> GetTeamsMapsStats([FromQuery] string tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var result = await Mediator.Send(new GetTeamsMapsStatsQuery { PlayerTag = tag });
@@ -106,16 +106,11 @@ namespace BrawlBuff.Api.Controllers
         }
 
         [HttpGet("teams_maps_modes")]
-        public async Task<IActionResult> GetTeamsMapsModesStats([FromQuery] string tag)
+        public async Task<IActionResult> GetTeamsMapsModesStats([FromQuery] string tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var result = await Mediator.Send(new GetTeamsMapsModesStatsQuery { PlayerTag = tag });
             return Ok(result);
-        }
-
-        private void NormalizeTag(ref string tag)
-        {
-            tag = !string.IsNullOrEmpty(tag) ? "#" + tag : tag;
         }
     }
 }

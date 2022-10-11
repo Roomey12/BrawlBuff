@@ -18,17 +18,11 @@ namespace BrawlBuffApi.Controllers
 
 
         [HttpGet("{tag}")]
-        public async Task<IActionResult> GetPlayerBattleStats(string tag)
+        public async Task<IActionResult> GetPlayerBattleStats(string tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
             var playerStats = await _playerService.GetPlayerBattleStatsAsync(tag);
             return Ok(playerStats);
-        }
- 
-
-        private void NormalizeTag(ref string tag)
-        {
-            tag = "%23" + tag;
         }
     }
 }

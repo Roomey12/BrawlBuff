@@ -9,7 +9,6 @@ using PlayerBattle = BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService
 using EventBattle = BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService.Models.EventBattle;
 using BattleLog = BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService.Models.BattleLog;
 using BrawlBuff.Domain.Enums;
-using BrawlBuff.Domain.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace BrawlBuff.Application.Services
@@ -33,36 +32,34 @@ namespace BrawlBuff.Application.Services
             _logger = logger;
         }
 
-        public async Task<IEnumerable<BattleDetail>> GetPlayerBattleStatsAsync(string tag)
+        public async Task RegisterPlayerAsync(string tag)
         {
             var player = await _brawlStarsApiHttpService.GetPlayerByTagAsync(tag);
 
-            if (player == null)
+            if (player is null)
             {
                 throw new Exception("There is no player with such tag.");
             }
 
             var dbPlayer = await _brawlBuffDbContext.Players.FirstOrDefaultAsync(x => x.Tag == player.Tag);
 
-            if (dbPlayer == null)
+            if (dbPlayer is not null)
             {
-                var newPlayer = new Player(player.Tag);
-                await RecordPlayerBattleStatsAsync(newPlayer);
+                throw new Exception("Player with such tag already exists.");
             }
 
-            var battles = await _brawlBuffDbContext.BattleDetails.Include(x => x.Battle).Where(x => x.PlayerTag == player.Tag).ToListAsync();
-
-            return battles;
+            var newPlayer = new Player(player.Tag);
+            await RecordPlayerBattleStatsAsync(newPlayer);
         }
 
         public async Task RecordPlayerBattleStatsAsync(Player player)
         {
-            if (player == null)
+            if (player is null)
             {
-                throw new Exception("todo");
+                throw new Exception("Player parameter can not be null.");
             }
 
-            using var transaction = await _brawlBuffDbContext.Database.BeginTransactionAsync();
+            await using var transaction = await _brawlBuffDbContext.Database.BeginTransactionAsync();
             var battleDetails = new List<BattleDetail>();
             try
             {
@@ -163,20 +160,23 @@ namespace BrawlBuff.Application.Services
                 case EventType.EventSoloPlayers:
                     battleDetails.Add(HandleSoloPlayersGame(log, battleDetail, newPlayer));
                     break;
-                //case EventType.Event5vs1: // skip
-                //    break;
-                //case EventType.EventSolo: // skip
-                //    break;
-                //case EventType.Unknown:
-                //    break;
-                //default:
-                //    break;
+                case EventType.Event5vs1:
+                    battleDetails.Add(Handle5vs1Game(log, battleDetail, newPlayer, eventType));
+                    break;
+                    //case EventType.Event3Players:
+                    //    break;
+                    //case EventType.EventSolo: // skip
+                    //    break;
+                    //case EventType.Unknown:
+                    //    break;
+                    //default:
+                    //    break;
             }
 
             return battleDetails;
         }
 
-        public List<BattleDetail> Handle1vs1Game(BattleLog log, BattleDetail battleDetail, Player newPlayer)
+        private List<BattleDetail> Handle1vs1Game(BattleLog log, BattleDetail battleDetail, Player newPlayer)
         {
             var battleDetails = new List<BattleDetail>();
 
@@ -212,7 +212,7 @@ namespace BrawlBuff.Application.Services
             return battleDetails;
         }
 
-        public BattleDetail HandleSoloPlayersGame(BattleLog log, BattleDetail battleDetail, Player newPlayer)
+        private BattleDetail HandleSoloPlayersGame(BattleLog log, BattleDetail battleDetail, Player newPlayer)
         {
             var gamePlayer = log.Battle.Players.FirstOrDefault(x => x.Tag == newPlayer.Tag);
             battleDetail.Place = log.Battle.Rank ?? log.Battle.Players.IndexOf(gamePlayer) + 1;
@@ -225,7 +225,7 @@ namespace BrawlBuff.Application.Services
             return battleDetail;
         }
 
-        public List<BattleDetail> HandleTeamGame(BattleLog log, BattleDetail battleDetail, Player newPlayer, EventType eventType)
+        private List<BattleDetail> HandleTeamGame(BattleLog log, BattleDetail battleDetail, Player newPlayer, EventType eventType)
         {
             var battleDetails = new List<BattleDetail>();
 
@@ -268,6 +268,16 @@ namespace BrawlBuff.Application.Services
             }
 
             return battleDetails;
+        }
+
+        private BattleDetail Handle5vs1Game(BattleLog log, BattleDetail battleDetail, Player player, EventType eventType)
+        {
+            var team = log.Battle.Teams.FirstOrDefault(t => t.Any(p => p.Tag == player.Tag));
+            var battlePlayer = team.FirstOrDefault(x => x.Tag == player.Tag);
+            battleDetail.Brawler = battlePlayer.Brawler.Name;
+            battleDetail.Place = log.Battle.Teams.IndexOf(team) + 1;
+            battleDetail.Result = GetResultByPlace(battleDetail.Place, eventType);
+            return battleDetail;
         }
 
         private async Task<int?> GetDbEventIdAsync(int id)
@@ -327,7 +337,7 @@ namespace BrawlBuff.Application.Services
                     return place <= 4 ? "victory" : "defeat";
                 case EventType.Event5of2:
                     return place <= 2 ? "victory" : "defeat";
-                case EventType.Event3vs3 or EventType.Event1vs1:
+                case EventType.Event3vs3 or EventType.Event1vs1 or EventType.Event5vs1:
                     return place == 1 ? "victory" : "defeat";
                 default:
                     return null;

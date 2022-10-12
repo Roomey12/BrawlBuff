@@ -17,12 +17,13 @@ namespace BrawlBuffApi.Controllers
         }
 
 
+        [HttpPost("{tag}")]
         [HttpGet("{tag}")]
-        public async Task<IActionResult> GetPlayerBattleStats(string tag = "Q2L9C0QLQ")
+        public async Task<IActionResult> RegisterPlayer(string tag = "Q2L9C0QLQ")
         {
             NormalizeTag(ref tag);
-            var playerStats = await _playerService.GetPlayerBattleStatsAsync(tag);
-            return Ok(playerStats);
+            await _playerService.RegisterPlayerAsync(tag);
+            return Ok();
         }
     }
 }

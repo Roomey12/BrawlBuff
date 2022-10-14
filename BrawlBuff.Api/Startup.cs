@@ -1,5 +1,7 @@
-﻿using BrawlBuff.Application;
+﻿using BrawlBuff.Api.Filters;
+using BrawlBuff.Application;
 using BrawlBuff.Infrastructure;
+using BrawlBuff.Infrastructure.Persistence;
 
 namespace BrawlBuff.Api
 {
@@ -17,13 +19,16 @@ namespace BrawlBuff.Api
         {
             services.AddApplication();
             services.AddInfrastructure(Configuration);
-            services.AddLogging();//
-            //services.AddDatabaseDeveloperPageExceptionFilter();
 
+            services.AddLogging();
+            services.AddDatabaseDeveloperPageExceptionFilter();
             services.AddHttpContextAccessor();
-            services.AddControllers();
-            //services.AddHealthChecks()
-            //    .AddDbContextCheck<ApplicationDbContext>();
+            services.AddControllers(options =>
+            {
+                options.Filters.Add<UnhandledExceptionFilterAttribute>();
+            });
+            services.AddHealthChecks()
+                .AddDbContextCheck<BrawlBuffDbContext>();
 
             // Customise default API behaviour
             //services.Configure<ApiBehaviorOptions>(options =>
@@ -38,7 +43,7 @@ namespace BrawlBuff.Api
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                //app.UseMigrationsEndPoint();
+                app.UseMigrationsEndPoint();
                 app.UseSwagger();
                 app.UseSwaggerUI(options =>
                 {
@@ -49,7 +54,6 @@ namespace BrawlBuff.Api
             else
             {
                 app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             }
 
             //app.UseHealthChecks("/health");

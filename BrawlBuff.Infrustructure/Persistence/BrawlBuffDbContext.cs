@@ -1,14 +1,8 @@
 ﻿using BrawlBuff.Application.Common.Interfaces;
-using BrawlBuff.Application.HttpServices.BrawlApiHttpService;
 using BrawlBuff.Domain.Common;
 using BrawlBuff.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BrawlBuff.Infrastructure.Persistence
 {

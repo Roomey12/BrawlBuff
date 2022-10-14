@@ -25,5 +25,10 @@ namespace BrawlBuffApi.Controllers
             await _playerService.RegisterPlayerAsync(tag);
             return Ok();
         }
+
+        protected void NormalizeTag(ref string tag)
+        {
+            tag = "%23" + tag;
+        }
     }
 }

@@ -112,5 +112,10 @@ namespace BrawlBuff.Api.Controllers
             var result = await Mediator.Send(new GetTeamsMapsModesStatsQuery { PlayerTag = tag });
             return Ok(result);
         }
+
+        private void NormalizeTag(ref string tag)
+        {
+            tag = !string.IsNullOrEmpty(tag) ? "#" + tag : tag;
+        }
     }
 }

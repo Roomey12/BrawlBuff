@@ -26,8 +26,8 @@ namespace BrawlBuff.RecordStatistics
             _logger.LogInformation("Record Statistics Function Constructor");
         }
 
-        [FunctionName("RecordData")]//0 0 7-17/5 * * *
-        public async Task Run([TimerTrigger("0 0 7-17/5 * * *")] TimerInfo myTimer)
+        [FunctionName("RecordData")]//0 0 7-19/3 * * *
+        public async Task Run([TimerTrigger("0 0 7-19/3 * * *")] TimerInfo myTimer)
         {
             _logger.LogInformation($"Record Data function executed at: {_dateTime.Now}");
 

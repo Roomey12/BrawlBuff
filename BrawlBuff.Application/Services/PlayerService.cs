@@ -163,8 +163,9 @@ namespace BrawlBuff.Application.Services
                 case EventType.Event5vs1:
                     battleDetails.Add(Handle5vs1Game(log, battleDetail, newPlayer, eventType));
                     break;
-                    //case EventType.Event3Players:
-                    //    break;
+                case EventType.Event3Players:
+                    battleDetails.AddRange(Handle3PlayersGame(log, battleDetail));
+                    break;
                     //case EventType.EventSolo: // skip
                     //    break;
                     //case EventType.Unknown:
@@ -278,6 +279,30 @@ namespace BrawlBuff.Application.Services
             battleDetail.Place = log.Battle.Teams.IndexOf(team) + 1;
             battleDetail.Result = GetResultByPlace(battleDetail.Place, eventType);
             return battleDetail;
+        }
+
+        private List<BattleDetail> Handle3PlayersGame(BattleLog log, BattleDetail battleDetail)
+        {
+            var battleDetails = new List<BattleDetail>();
+            var team = new Team();
+            var place= GetPlaceByResult(log.Battle.Result);
+
+            foreach (var teamPlayer in log.Battle.Players)
+            {
+                var newBattleDetail = new BattleDetail()
+                {
+                    Team = team,
+                    PlayerTag = teamPlayer.Tag,
+                    Brawler = teamPlayer.Brawler.Name,
+                    Result = log.Battle.Result,
+                    Place = place,
+                    Battle = battleDetail.Battle
+                };
+
+                battleDetails.Add(newBattleDetail);
+            }
+
+            return battleDetails;
         }
 
         private async Task<int?> GetDbEventIdAsync(int id)

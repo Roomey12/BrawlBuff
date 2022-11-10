@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace BrawlBuff.Application.Statistics.Queries.GetBrawlersMapsStats;
 
-namespace BrawlBuff.Application.Statistics.Queries.GetBrawlersMapsStats
+public class GetBrawlersMapsStatsQueryResult
 {
-    public class GetBrawlersMapsStatsQueryResult
-    {
-        public List<BrawlerMapStatsDTO> BrawlersMapsStats { get; set; }
-    }
+    public List<BrawlerMapStatsDTO> BrawlersMapsStats { get; set; }
 }

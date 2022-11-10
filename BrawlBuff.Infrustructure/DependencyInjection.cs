@@ -5,20 +5,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace BrawlBuff.Infrastructure
+namespace BrawlBuff.Infrastructure;
+
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddDbContext<BrawlBuffDbContext>(options =>
-                options.UseNpgsql(configuration["BrawlBuffDb-Cockroach-ConnectionString"]));
+        services.AddDbContext<BrawlBuffDbContext>(options =>
+            options.UseNpgsql(configuration["BrawlBuffDb-Cockroach-ConnectionString"]));
 
-            services.AddScoped<IBrawlBuffDbContext>(provider => provider.GetRequiredService<BrawlBuffDbContext>());
+        services.AddScoped<IBrawlBuffDbContext>(provider => provider.GetRequiredService<BrawlBuffDbContext>());
 
-            services.AddTransient<IDateTime, DateTimeService>();
+        services.AddTransient<IDateTime, DateTimeService>();
 
-            return services;
-        }
+        return services;
     }
 }

@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace BrawlBuff.Domain.Enums;
 
-namespace BrawlBuff.Domain.Enums
+public enum BattleResult
 {
-    public enum BattleResult
-    {
-        Defeat,
-        Victory
-    }
+    Defeat,
+    Victory
 }

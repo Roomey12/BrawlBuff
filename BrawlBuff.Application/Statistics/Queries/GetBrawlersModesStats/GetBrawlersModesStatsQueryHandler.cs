@@ -3,42 +3,37 @@ using BrawlBuff.Domain.Enums;
 using BrawlBuff.Domain.Extensions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace BrawlBuff.Application.Statistics.Queries.GetBrawlersModesStats
+namespace BrawlBuff.Application.Statistics.Queries.GetBrawlersModesStats;
+
+public class GetBrawlersModesStatsQueryHandler : IRequestHandler<GetBrawlersModesStatsQuery, GetBrawlersModesStatsQueryResult>
 {
-    public class GetBrawlersModesStatsQueryHandler : IRequestHandler<GetBrawlersModesStatsQuery, GetBrawlersModesStatsQueryResult>
-    {
-        private readonly IBrawlBuffDbContext _brawlBuffDbContext;
+    private readonly IBrawlBuffDbContext _brawlBuffDbContext;
 
-        public GetBrawlersModesStatsQueryHandler(IBrawlBuffDbContext brawlBuffDbContext)
+    public GetBrawlersModesStatsQueryHandler(IBrawlBuffDbContext brawlBuffDbContext)
+    {
+        _brawlBuffDbContext = brawlBuffDbContext;
+    }
+
+    public async Task<GetBrawlersModesStatsQueryResult> Handle(GetBrawlersModesStatsQuery request, CancellationToken cancellationToken)
+    {
+        var battleDetails = _brawlBuffDbContext.BattleDetails.AsQueryable();
+        var isPersonal = !string.IsNullOrEmpty(request.PlayerTag);
+
+        if (isPersonal)
         {
-            _brawlBuffDbContext = brawlBuffDbContext;
+            battleDetails = battleDetails.Where(x => x.PlayerTag == request.PlayerTag);
         }
 
-        public async Task<GetBrawlersModesStatsQueryResult> Handle(GetBrawlersModesStatsQuery request, CancellationToken cancellationToken)
+        var brawlersModesBattleDetails =
+            from battleDetail in battleDetails
+            join battle in _brawlBuffDbContext.Battles on battleDetail.BattleId equals battle.Id
+            join ev in _brawlBuffDbContext.Events on battle.EventId equals ev.Id
+            select new { Brawler = battleDetail.Brawler, Mode = ev.Mode, BattleDetail = battleDetail };
+
+        var result = new GetBrawlersModesStatsQueryResult
         {
-            var battleDetails = _brawlBuffDbContext.BattleDetails.AsQueryable();
-            var isPersonal = !string.IsNullOrEmpty(request.PlayerTag);
-
-            if (isPersonal)
-            {
-                battleDetails = battleDetails.Where(x => x.PlayerTag == request.PlayerTag);
-            }
-
-            var brawlersModesBattleDetails =
-                from battleDetail in battleDetails
-                join battle in _brawlBuffDbContext.Battles on battleDetail.BattleId equals battle.Id
-                join ev in _brawlBuffDbContext.Events on battle.EventId equals ev.Id
-                select new { Brawler = battleDetail.Brawler, Mode = ev.Mode, BattleDetail = battleDetail };
-
-            var result = new GetBrawlersModesStatsQueryResult
-            {
-                BrawlersModesStats = await brawlersModesBattleDetails.GroupBy(s => new { s.Brawler, s.Mode })
+            BrawlersModesStats = await brawlersModesBattleDetails.GroupBy(s => new { s.Brawler, s.Mode })
                 .Select(group => new BrawlerModeStatsDTO
                 {
                     Brawler = group.Key.Brawler,
@@ -52,9 +47,8 @@ namespace BrawlBuff.Application.Statistics.Queries.GetBrawlersModesStats
                 .ThenBy(x => x.Brawler)
                 .ThenBy(x => x.Mode)
                 .ToListAsync(cancellationToken)
-            };
+        };
 
-            return result;
-        }
+        return result;
     }
 }

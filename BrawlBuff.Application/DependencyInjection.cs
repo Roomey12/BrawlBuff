@@ -6,19 +6,18 @@ using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
-namespace BrawlBuff.Application
+namespace BrawlBuff.Application;
+
+public static class DependencyInjection
 {
-    public static class DependencyInjection
+    public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        public static IServiceCollection AddApplication(this IServiceCollection services)
-        {
-            services.AddTransient<IPlayerService, PlayerService>();
-            services.AddMediatR(Assembly.GetExecutingAssembly());
+        services.AddTransient<IPlayerService, PlayerService>();
+        services.AddMediatR(Assembly.GetExecutingAssembly());
 
-            services.AddHttpClient<BrawlStarsApiHttpService>();
-            services.AddHttpClient<BrawlApiHttpService>();
+        services.AddHttpClient<BrawlStarsApiHttpService>();
+        services.AddHttpClient<BrawlApiHttpService>();
 
-            return services;
-        }
+        return services;
     }
 }

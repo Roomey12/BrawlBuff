@@ -3,42 +3,37 @@ using BrawlBuff.Domain.Enums;
 using BrawlBuff.Domain.Extensions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace BrawlBuff.Application.Statistics.Queries.GetBrawlersMapsStats
+namespace BrawlBuff.Application.Statistics.Queries.GetBrawlersMapsStats;
+
+public class GetBrawlersMapsStatsQueryHandler : IRequestHandler<GetBrawlersMapsStatsQuery, GetBrawlersMapsStatsQueryResult>
 {
-    public class GetBrawlersMapsStatsQueryHandler : IRequestHandler<GetBrawlersMapsStatsQuery, GetBrawlersMapsStatsQueryResult>
-    {
-        private readonly IBrawlBuffDbContext _brawlBuffDbContext;
+    private readonly IBrawlBuffDbContext _brawlBuffDbContext;
 
-        public GetBrawlersMapsStatsQueryHandler(IBrawlBuffDbContext brawlBuffDbContext)
+    public GetBrawlersMapsStatsQueryHandler(IBrawlBuffDbContext brawlBuffDbContext)
+    {
+        _brawlBuffDbContext = brawlBuffDbContext;
+    }
+
+    public async Task<GetBrawlersMapsStatsQueryResult> Handle(GetBrawlersMapsStatsQuery request, CancellationToken cancellationToken)
+    {
+        var battleDetails = _brawlBuffDbContext.BattleDetails.AsQueryable();
+        var isPersonal = !string.IsNullOrEmpty(request.PlayerTag);
+
+        if (isPersonal)
         {
-            _brawlBuffDbContext = brawlBuffDbContext;
+            battleDetails = battleDetails.Where(x => x.PlayerTag == request.PlayerTag);
         }
 
-        public async Task<GetBrawlersMapsStatsQueryResult> Handle(GetBrawlersMapsStatsQuery request, CancellationToken cancellationToken)
+        var mapsModesBattleDetails =
+            from battleDetail in battleDetails
+            join battle in _brawlBuffDbContext.Battles on battleDetail.BattleId equals battle.Id
+            join ev in _brawlBuffDbContext.Events on battle.EventId equals ev.Id
+            select new { Map = ev.Map, Brawler = battleDetail.Brawler, BattleDetail = battleDetail };
+
+        var result = new GetBrawlersMapsStatsQueryResult
         {
-            var battleDetails = _brawlBuffDbContext.BattleDetails.AsQueryable();
-            var isPersonal = !string.IsNullOrEmpty(request.PlayerTag);
-
-            if (isPersonal)
-            {
-                battleDetails = battleDetails.Where(x => x.PlayerTag == request.PlayerTag);
-            }
-
-            var mapsModesBattleDetails =
-                from battleDetail in battleDetails
-                join battle in _brawlBuffDbContext.Battles on battleDetail.BattleId equals battle.Id
-                join ev in _brawlBuffDbContext.Events on battle.EventId equals ev.Id
-                select new { Map = ev.Map, Brawler = battleDetail.Brawler, BattleDetail = battleDetail };
-
-            var result = new GetBrawlersMapsStatsQueryResult
-            {
-                BrawlersMapsStats = await mapsModesBattleDetails
+            BrawlersMapsStats = await mapsModesBattleDetails
                 .GroupBy(s => new { s.Brawler, s.Map })
                 .Select(group => new BrawlerMapStatsDTO
                 {
@@ -53,9 +48,8 @@ namespace BrawlBuff.Application.Statistics.Queries.GetBrawlersMapsStats
                 .ThenBy(x => x.Brawler)
                 .ThenBy(x => x.Map)
                 .ToListAsync(cancellationToken)
-            };
+        };
 
-            return result;
-        }
+        return result;
     }
 }

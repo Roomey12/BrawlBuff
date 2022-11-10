@@ -10,30 +10,29 @@ using Microsoft.Extensions.Logging;
 
 [assembly: FunctionsStartup(typeof(BrawlBuff.RecordData.Startup))]
 
-namespace BrawlBuff.RecordData
+namespace BrawlBuff.RecordData;
+
+public class Startup : FunctionsStartup
 {
-    public class Startup : FunctionsStartup
+    public override void Configure(IFunctionsHostBuilder builder)
     {
-        public override void Configure(IFunctionsHostBuilder builder)
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+        builder.Services.AddLogging(x =>
         {
-            AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+            x.AddConfiguration(builder.GetContext().Configuration.GetSection("Logging"));
+        });
+        builder.Services.AddApplication();
+        builder.Services.AddInfrastructure(builder.GetContext().Configuration);
+    }
 
-            builder.Services.AddLogging(x =>
-            {
-                x.AddConfiguration(builder.GetContext().Configuration.GetSection("Logging"));
-            });
-            builder.Services.AddApplication();
-            builder.Services.AddInfrastructure(builder.GetContext().Configuration);
-        }
+    public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
+    {
+        FunctionsHostBuilderContext context = builder.GetContext();
+        builder.ConfigurationBuilder
+            .AddJsonFile(Path.Combine(context.ApplicationRootPath, "appsettings.json"), optional: false, reloadOnChange: false)
+            .AddEnvironmentVariables();
 
-        public override void ConfigureAppConfiguration(IFunctionsConfigurationBuilder builder)
-        {
-            FunctionsHostBuilderContext context = builder.GetContext();
-            builder.ConfigurationBuilder
-                .AddJsonFile(Path.Combine(context.ApplicationRootPath, "appsettings.json"), optional: false, reloadOnChange: false)
-                .AddEnvironmentVariables();
-
-            builder.ConfigurationBuilder.AddAzureKeyVault();
-        }
+        builder.ConfigurationBuilder.AddAzureKeyVault();
     }
 }

@@ -3,42 +3,37 @@ using BrawlBuff.Domain.Enums;
 using BrawlBuff.Domain.Extensions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace BrawlBuff.Application.Statistics.Queries.GetMapsModesStats
+namespace BrawlBuff.Application.Statistics.Queries.GetMapsModesStats;
+
+public class GetMapsModesStatsQueryHandler : IRequestHandler<GetMapsModesStatsQuery, GetMapsModesStatsQueryResult>
 {
-    public class GetMapsModesStatsQueryHandler : IRequestHandler<GetMapsModesStatsQuery, GetMapsModesStatsQueryResult>
-    {
-        private readonly IBrawlBuffDbContext _brawlBuffDbContext;
+    private readonly IBrawlBuffDbContext _brawlBuffDbContext;
 
-        public GetMapsModesStatsQueryHandler(IBrawlBuffDbContext brawlBuffDbContext)
+    public GetMapsModesStatsQueryHandler(IBrawlBuffDbContext brawlBuffDbContext)
+    {
+        _brawlBuffDbContext = brawlBuffDbContext;
+    }
+
+    public async Task<GetMapsModesStatsQueryResult> Handle(GetMapsModesStatsQuery request, CancellationToken cancellationToken)
+    {
+        var battleDetails = _brawlBuffDbContext.BattleDetails.AsQueryable();
+        var isPersonal = !string.IsNullOrEmpty(request.PlayerTag);
+
+        if (isPersonal)
         {
-            _brawlBuffDbContext = brawlBuffDbContext;
+            battleDetails = battleDetails.Where(x => x.PlayerTag == request.PlayerTag);
         }
 
-        public async Task<GetMapsModesStatsQueryResult> Handle(GetMapsModesStatsQuery request, CancellationToken cancellationToken)
+        var mapsModesBattleDetails =
+            from battleDetail in battleDetails
+            join battle in _brawlBuffDbContext.Battles on battleDetail.BattleId equals battle.Id
+            join ev in _brawlBuffDbContext.Events on battle.EventId equals ev.Id
+            select new { Map = ev.Map, Mode = ev.Mode, BattleDetail = battleDetail };
+
+        var result = new GetMapsModesStatsQueryResult
         {
-            var battleDetails = _brawlBuffDbContext.BattleDetails.AsQueryable();
-            var isPersonal = !string.IsNullOrEmpty(request.PlayerTag);
-
-            if (isPersonal)
-            {
-                battleDetails = battleDetails.Where(x => x.PlayerTag == request.PlayerTag);
-            }
-
-            var mapsModesBattleDetails =
-                from battleDetail in battleDetails
-                join battle in _brawlBuffDbContext.Battles on battleDetail.BattleId equals battle.Id
-                join ev in _brawlBuffDbContext.Events on battle.EventId equals ev.Id
-                select new { Map = ev.Map, Mode = ev.Mode, BattleDetail = battleDetail };
-
-            var result = new GetMapsModesStatsQueryResult
-            {
-                MapsModesStats = await mapsModesBattleDetails
+            MapsModesStats = await mapsModesBattleDetails
                 .GroupBy(s => new { s.Map, s.Mode })
                 .Select(group => new MapModeStatsDTO
                 {
@@ -52,9 +47,8 @@ namespace BrawlBuff.Application.Statistics.Queries.GetMapsModesStats
                 .OrderBy(x => x.Map)
                 .ThenBy(x => x.Mode)
                 .ToListAsync(cancellationToken)
-            };
+        };
 
-            return result;
-        }
+        return result;
     }
 }

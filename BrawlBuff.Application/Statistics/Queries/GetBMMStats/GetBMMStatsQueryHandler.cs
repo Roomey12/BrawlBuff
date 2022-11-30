@@ -19,8 +19,6 @@ public class GetBMMStatsQueryHandler : IRequestHandler<GetBMMStatsQuery, GetBMMS
 
     public async Task<GetBMMStatsQueryResult> Handle(GetBMMStatsQuery request, CancellationToken cancellationToken)
     {
-        var stopwatch = new Stopwatch();
-        stopwatch.Start();
         var battleDetails = _brawlBuffDbContext.BattleDetails.AsQueryable();
         var isPersonal = !string.IsNullOrEmpty(request.PlayerTag);
 
@@ -50,17 +48,16 @@ public class GetBMMStatsQueryHandler : IRequestHandler<GetBMMStatsQuery, GetBMMS
                     Map = group.Key.Map,
                     Mode = group.Key.Mode,
                     BattlesCount = group.Count(),
-                    BattlesWonCount = group.Count(x => x.BattleDetail.Result == BattleResult.Victory.GetString()),
-                    BattlesLostCount = group.Count(x => x.BattleDetail.Result == BattleResult.Defeat.GetString()),
-                    Winrate = (double)group.Count(x => x.BattleDetail.Result == BattleResult.Victory.GetString()) / group.Count()
+                    BattlesWonCount = group.Count(x => x.BattleDetail.Result == BattleResult.Victory),
+                    BattlesLostCount = group.Count(x => x.BattleDetail.Result == BattleResult.Defeat),
+                    Winrate = (double)group.Count(x => x.BattleDetail.Result == BattleResult.Victory) / group.Count()
                 })
                 .OrderBy(x => x.Brawler)
                 .ThenBy(x => x.Map)
                 .ThenBy(x => x.Mode)
                 .ToListAsync(cancellationToken)
         };
-        stopwatch.Stop();
-        Console.WriteLine(stopwatch.ElapsedMilliseconds);
+
         return result;
     }
 }

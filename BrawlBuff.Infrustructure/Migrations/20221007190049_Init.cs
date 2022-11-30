@@ -92,7 +92,7 @@ namespace BrawlBuff.Infrastructure.Migrations
                     TrophyChange = table.Column<int>(type: "integer", nullable: true),
                     Place = table.Column<int>(type: "integer", nullable: true),
                     Brawler = table.Column<string>(type: "text", nullable: true),
-                    Result = table.Column<string>(type: "text", nullable: true),
+                    Result = table.Column<string>(type: "integer", nullable: true),
                     BattleId = table.Column<int>(type: "integer", nullable: false),
                     PlayerId = table.Column<int>(type: "integer", nullable: true),
                     TeamId = table.Column<int>(type: "integer", nullable: true),

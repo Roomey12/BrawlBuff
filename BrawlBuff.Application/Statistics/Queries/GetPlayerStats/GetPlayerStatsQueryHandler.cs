@@ -25,7 +25,7 @@ public class GetPlayerStatsQueryHandler : IRequestHandler<GetPlayerStatsQuery, G
         var battlesCount = await battleDetails
             .CountAsync(cancellationToken);
         var battlesWonCount = await battleDetails
-            .CountAsync(x => x.Result == BattleResult.Victory.GetString(), cancellationToken);
+            .CountAsync(x => x.Result == BattleResult.Victory, cancellationToken);
         var starPlayerCount = await battleDetails
             .Where(x => x.Battle.StarPlayerTag == request.PlayerTag)
             .CountAsync(cancellationToken);

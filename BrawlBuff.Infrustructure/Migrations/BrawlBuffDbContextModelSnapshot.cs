@@ -17,7 +17,7 @@ namespace BrawlBuff.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "6.0.9")
+                .HasAnnotation("ProductVersion", "7.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -88,8 +88,8 @@ namespace BrawlBuff.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Result")
-                        .HasColumnType("text");
+                    b.Property<int?>("Result")
+                        .HasColumnType("integer");
 
                     b.Property<int?>("TeamId")
                         .HasColumnType("integer");

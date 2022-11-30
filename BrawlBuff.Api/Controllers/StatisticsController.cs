@@ -1,16 +1,6 @@
 ﻿using BrawlBuff.Application.Statistics.Queries.GetBMMStats;
-using BrawlBuff.Application.Statistics.Queries.GetBrawlersMapsModesStats;
-using BrawlBuff.Application.Statistics.Queries.GetBrawlersMapsStats;
-using BrawlBuff.Application.Statistics.Queries.GetBrawlersModesStats;
 using BrawlBuff.Application.Statistics.Queries.GetBrawlersStats;
-using BrawlBuff.Application.Statistics.Queries.GetMapsModesStats;
-using BrawlBuff.Application.Statistics.Queries.GetMapsStats;
-using BrawlBuff.Application.Statistics.Queries.GetModesStats;
 using BrawlBuff.Application.Statistics.Queries.GetPersonalStats;
-using BrawlBuff.Application.Statistics.Queries.GetTeamsMapsModesStats;
-using BrawlBuff.Application.Statistics.Queries.GetTeamsMapsStats;
-using BrawlBuff.Application.Statistics.Queries.GetTeamsModesStats;
-using BrawlBuff.Application.Statistics.Queries.GetTeamsStats;
 using BrawlBuff.Application.Statistics.Queries.GetTMMStats;
 using Microsoft.AspNetCore.Mvc;
 

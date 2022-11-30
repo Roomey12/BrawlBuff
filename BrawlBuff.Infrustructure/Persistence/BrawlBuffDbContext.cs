@@ -8,26 +8,17 @@ namespace BrawlBuff.Infrastructure.Persistence;
 
 public class BrawlBuffDbContext : DbContext, IBrawlBuffDbContext
 {
+    public override DatabaseFacade Database => base.Database;
+    private readonly IDateTime _dateTime;
     public DbSet<Player> Players { get; set; }
     public DbSet<Event> Events { get; set; }
     public DbSet<Battle> Battles { get; set; }
     public DbSet<BattleDetail> BattleDetails { get; set; }
     public DbSet<Team> Teams { get; set; }
-    public override DatabaseFacade Database => base.Database;
-    private readonly IDateTime _dateTime;
-    private static bool initialized = false;
-    public BrawlBuffDbContext(
-        DbContextOptions<BrawlBuffDbContext> options,
-        IDateTime dateTime)
+
+    public BrawlBuffDbContext(DbContextOptions<BrawlBuffDbContext> options, IDateTime dateTime)
         : base(options)
     {
-        //if (!initialized)
-        //{
-        //    //Database.EnsureDeleted();
-        //    //Database.EnsureCreated();
-        //    Database.Migrate();
-        //    initialized = true;
-        //}
         _dateTime = dateTime;
     }
 

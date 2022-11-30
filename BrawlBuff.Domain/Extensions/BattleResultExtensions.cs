@@ -12,8 +12,25 @@ public static class BattleResultExtensions
                 return "defeat";
             case BattleResult.Victory:
                 return "victory";
+            case BattleResult.Draw:
+                return "draw";
             default:
                 return null;
+        }
+    }
+
+    public static BattleResult GetEnum(string battleResult)
+    {
+        switch (battleResult)
+        {
+            case "defeat":
+                return BattleResult.Defeat;
+            case "victory":
+                return BattleResult.Victory;
+            case "draw":
+                return BattleResult.Draw;
+            default:
+                return BattleResult.Unknown;
         }
     }
 }

@@ -3,5 +3,7 @@
 public enum BattleResult
 {
     Defeat,
-    Victory
+    Victory,
+    Draw,
+    Unknown
 }

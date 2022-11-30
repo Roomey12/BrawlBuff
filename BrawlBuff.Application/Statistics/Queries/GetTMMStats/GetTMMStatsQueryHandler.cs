@@ -45,9 +45,9 @@ public class GetTMMStatsQueryHandler : IRequestHandler<GetTMMStatsQuery, GetTMMS
                     Map = group.Key.Map,
                     Mode = group.Key.Mode,
                     BattlesCount = group.Count(),
-                    BattlesWonCount = group.Count(x => x.BattleDetail.Result == BattleResult.Victory.GetString()),
-                    BattlesLostCount = group.Count(x => x.BattleDetail.Result == BattleResult.Defeat.GetString()),
-                    Winrate = (double)group.Count(x => x.BattleDetail.Result == BattleResult.Victory.GetString()) / group.Count()
+                    BattlesWonCount = group.Count(x => x.BattleDetail.Result == BattleResult.Victory),
+                    BattlesLostCount = group.Count(x => x.BattleDetail.Result == BattleResult.Defeat),
+                    Winrate = (double)group.Count(x => x.BattleDetail.Result == BattleResult.Victory) / group.Count()
                 })
                 .Where(x => x.BattlesCount > 1)
                 .OrderByDescending(x => x.BattlesCount)

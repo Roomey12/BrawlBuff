@@ -37,7 +37,7 @@ public class GetBrawlersStatsQueryHandler : IRequestHandler<GetBrawlersStatsQuer
             {
                 Brawler = group.Key,
                 BattlesCount = group.Count(),
-                BattlesWonCount = group.Count(x => x.Result == BattleResult.Victory.GetString())
+                BattlesWonCount = group.Count(x => x.Result == BattleResult.Victory)
             })
             .ToListAsync(cancellationToken);
 

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using BattleLog = BrawlBuff.Application.HttpServices.BrawlStarsApiHttpService.Models.BattleLog;
 using BrawlBuff.Domain.Enums;
+using BrawlBuff.Domain.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace BrawlBuff.Application.Services;
@@ -102,7 +103,7 @@ public class PlayerService : IPlayerService
                     PlayerId = player.Id,
                     PlayerTag = player.Tag,
                     TrophyChange = log.Battle.TrophyChange,
-                    Result = log.Battle.Result,
+                    Result = BattleResultExtensions.GetEnum(log.Battle.Result),
                     Battle = new Battle()
                     {
                         EventId = await GetDbEventIdAsync(log.Event.Id),
@@ -283,7 +284,8 @@ public class PlayerService : IPlayerService
     {
         var battleDetails = new List<BattleDetail>();
         var team = new Team();
-        var place= GetPlaceByResult(log.Battle.Result);
+        var result = BattleResultExtensions.GetEnum(log.Battle.Result);
+        var place= GetPlaceByResult(result);
 
         foreach (var teamPlayer in log.Battle.Players)
         {
@@ -292,7 +294,7 @@ public class PlayerService : IPlayerService
                 Team = team,
                 PlayerTag = teamPlayer.Tag,
                 Brawler = teamPlayer.Brawler.Name,
-                Result = log.Battle.Result,
+                Result = result,
                 Place = place,
                 Battle = battleDetail.Battle
             };
@@ -340,9 +342,11 @@ public class PlayerService : IPlayerService
     }
 
     // used only for battles with 2 teams
-    private int GetPlaceByResult(string result, bool getOppositeResult = false)
+    private int GetPlaceByResult(BattleResult? result, bool getOppositeResult = false)
     {
-        var place = result == "victory" ? 1 : 2;
+        if (result == BattleResult.Draw) return 0;
+
+        var place = result == BattleResult.Victory ? 1 : 2;
 
         if (getOppositeResult)
         {
@@ -352,18 +356,28 @@ public class PlayerService : IPlayerService
         return place;
     }
 
-    private string GetResultByPlace(int? place, EventType eventType)
+    //private int GetPlaceByResult(string result, bool getOppositeResult = false)
+    //{
+    //    if (result == "draw") return 0;
+
+    //    var place = result == "victory" ? 1 : 2;
+
+    //    if (getOppositeResult)
+    //    {
+    //        place = place == 1 ? 2 : 1;
+    //    }
+
+    //    return place;
+    //}
+
+    private BattleResult GetResultByPlace(int? place, EventType eventType)
     {
-        switch (eventType)
+        return eventType switch
         {
-            case EventType.EventSoloPlayers:
-                return place <= 4 ? "victory" : "defeat";
-            case EventType.Event5of2:
-                return place <= 2 ? "victory" : "defeat";
-            case EventType.Event3vs3 or EventType.Event1vs1 or EventType.Event5vs1:
-                return place == 1 ? "victory" : "defeat";
-            default:
-                return null;
-        }
+            EventType.EventSoloPlayers => place <= 4 ? BattleResult.Victory : BattleResult.Defeat,
+            EventType.Event5of2 => place <= 2 ? BattleResult.Victory : BattleResult.Defeat,
+            EventType.Event3vs3 or EventType.Event1vs1 or EventType.Event5vs1 => place == 1 ? BattleResult.Victory : BattleResult.Defeat,
+            _ => BattleResult.Unknown,
+        };
     }
 }

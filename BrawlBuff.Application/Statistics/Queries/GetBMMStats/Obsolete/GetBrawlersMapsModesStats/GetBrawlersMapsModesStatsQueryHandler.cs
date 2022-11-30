@@ -1,4 +1,5 @@
-﻿using BrawlBuff.Application.Common.Interfaces;
+﻿using System.Diagnostics;
+using BrawlBuff.Application.Common.Interfaces;
 using BrawlBuff.Domain.Enums;
 using BrawlBuff.Domain.Extensions;
 using MediatR;
@@ -17,6 +18,9 @@ public class GetBrawlersMapsModesStatsQueryHandler : IRequestHandler<GetBrawlers
 
     public async Task<GetBrawlersMapsModesStatsQueryResult> Handle(GetBrawlersMapsModesStatsQuery request, CancellationToken cancellationToken)
     {
+        var stopWatch = new Stopwatch();
+        stopWatch.Start();
+
         var battleDetails = _brawlBuffDbContext.BattleDetails.AsQueryable();
         var isPersonal = !string.IsNullOrEmpty(request.PlayerTag);
 
@@ -45,13 +49,15 @@ public class GetBrawlersMapsModesStatsQueryHandler : IRequestHandler<GetBrawlers
                     BattlesLostCount = group.Count() - group.Count(x => x.BattleDetail.Result == BattleResult.Victory.GetString()),
                     Winrate = (double)group.Count(x => x.BattleDetail.Result == BattleResult.Victory.GetString()) / group.Count()
                 })
-                .OrderBy(x => x.BattlesCount)
-                .ThenBy(x => x.Brawler)
+                //.OrderBy(x => x.BattlesCount)
+                .OrderBy(x => x.Brawler)
                 .ThenBy(x => x.Map)
                 .ThenBy(x => x.Mode)
                 .ToListAsync(cancellationToken)
         };
 
+        stopWatch.Stop();
+        Console.WriteLine(stopWatch.ElapsedMilliseconds);
         return result;
     }
 }
